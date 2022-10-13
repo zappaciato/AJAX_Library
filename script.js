@@ -8,8 +8,46 @@ function AJAX(config) {
     //xhr object required to send AJAX.
     this._xhr = new XMLHttpRequest();
 
-    console.log("AJAX object instance created!");
+    this._extendConfigOptions(config); // mix the default config with the provided config
+    
+    console.log("AJAX and XMLHTTP REQUEST object instance created!");
+    console.log(this._extendConfigOptions(config));
+};
 
+
+//mix default config with the provided config
+AJAX.prototype._extendConfigOptions = function(config) {
+
+    console.log("Extending Configuration options!");
+
+    //make copy of the default config as the original will be overwritten. Make string from object and then parse(make object from string);
+    var defaultConfig = JSON.parse(JSON.stringify(this._defaultConfig)); //JASON stringify will not include functions!
+
+    for(var key in defaultConfig) { // iterate throu keys in the defaultConfig object 
+        if(key in config) {  // if there is a key in Defaultconfig and its value is different than the one in the given config -> overwrite it;
+            defaultConfig[key] = config[key];
+        }
+
+    }
+
+    console.log(config);
+    return config;
+
+}
+
+// default config set up in case some of the options are not provided;
+AJAX.prototype._defaultConfig = {
+    type: "GET", 
+    url: window.location.href,
+    data: {},
+    options: {
+        async: true, 
+        timeout: 0,
+        username: null, 
+        password: null,
+    },
+
+    headers: {},
 }
 
 
