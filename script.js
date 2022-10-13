@@ -15,13 +15,7 @@ function AJAX(config) {
 
     this._assignEvents();
 
-    this._open();
-
-    this._assignUserHeaders();
-
-    
-
-    this._send();
+    this._beforeSend();
 };
 
 AJAX.prototype._assignEvents = function() {
@@ -47,6 +41,31 @@ AJAX.prototype._open = function() {
     this._xhr.timeout = this._config.options.timeout;
 
 };
+
+AJAX.prototype._send = function(data) {
+console.log("SEND xhr");
+    this._xhr?.send(data);
+}
+
+AJAX.prototype._beforeSend = function() {
+
+    var isDataProvided = Object.keys(this._config.data).length > 0, //check if we have some data provided 
+    data = null;
+
+    //check if we have POST or GET request;
+
+    if(this._config.type.toUpperCase() === "POST" && isDataProvided) {
+        data = this._serializeFormData(this._config.data);
+    } else if (this._config.type.toUpperCase() === "GET" && isDataProvided) {
+
+        this._config.url += "?" + this._serializeData(this._config.data);
+    }
+        console.log(this._config.url);
+
+    this._open();
+    this._assignUserHeaders();
+    this._send(data);
+}
 
 AJAX.prototype._send = function(data) {
 console.log("SEND xhr");
@@ -81,6 +100,32 @@ AJAX.prototype._handleError = function(e) {
     console.log("Handle Error");
 
 };
+
+//we can just send the object from config. We need to adjust the data properly so it is ready to be sent to the server. 
+AJAX.prototype._serializeFormData = function(data) {
+    var serialized = new FormData(); //new object instance and append to it the given data.
+    
+    for (var key in data) {
+        serialized.append(key,data[key]);
+    }
+
+    return serialized; // the data is ready to be sent to the server
+};
+
+//method to parse data for GET method in the url
+
+AJAX.prototype._serializeData = function(data) {
+
+    var serialized = '';
+
+    for(var key in data) {
+        serialized += key + "=" + encodeURIComponent(data[key]) + '&'; //there can't be any spaces so we have to use encodeURIComponent(data[key)
+    }
+
+    console.log(serialized.slice(0, serialized.length -1));
+
+    return serialized.slice(0, serialized.length -1); //removie the last & sign
+}
 
 //mix default config with the provided config
 AJAX.prototype._extendConfigOptions = function(config) {
