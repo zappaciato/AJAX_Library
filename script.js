@@ -38,6 +38,7 @@ AJAX.prototype._open = function() {
         this._config.options.password,
         );
 
+    this._xhr?.setRequestHeader("X-Requested-With", "XMLHttpRequest");
     this._xhr.timeout = this._config.options.timeout;
 
 };
@@ -92,13 +93,27 @@ AJAX.prototype._handleResponse = function(e) {
      if(this._xhr?.readyState === 4 && this._xhr.status >= 200 && this._xhr.status < 400) {
         console.log("Response received!");
         console.log(typeof this._config.success);
-     }
+        //if there is a function success call this function with response and xhr;
+        if(typeof this._config.success === 'function') {
+            this._config.success(this._xhr.response, this._xhr);
+        }
+     } else if(this._xhr?.readyState === 4 && this._xhr.status >= 400) { //if there are errors 400> call handleError method;
+
+        this._handleError();
+    }
+
+    if(this._xhr?.readyState > 0 ) {
+        console.log(this._xhr?.readyState);
+        console.log(this._xhr?.status);
+    }
    
 };
 
 AJAX.prototype._handleError = function(e) {
     console.log("Handle Error");
-
+    if(typeof this._config.failure === 'function') {
+            this._config.failure(this._xhr);
+        }
 };
 
 //we can just send the object from config. We need to adjust the data properly so it is ready to be sent to the server. 
@@ -167,7 +182,7 @@ AJAX.prototype._defaultConfig = {
 
 //example of a configuration object
 AJAX({
-    type: "GET", //I want to send GET
+    type: "POST", //I want to send GET
     url: 'receive_data.php', // to this address
     data: { // with the following data
         firstName: 'Kris',
